@@ -1,4 +1,4 @@
-<?php
+<?php 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -13,14 +13,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Por favor verificá que no sos un robot.";
     } else {
 
-        $secret = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+        // 🔥 TU SECRET KEY REAL
+        $secret = "6LcIwKMsAAAAAEzBYlYJebOGUczOoEYDYht1PGaZ";
         $response = $_POST['g-recaptcha-response'];
 
         $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response");
         $captcha_success = json_decode($verify);
 
         if (!$captcha_success->success) {
-            $error = "Error al validar el captcha.";
+            $error = "Captcha inválido. Intentá nuevamente.";
         } else {
 
             $usuario = $_POST["usuario"];
@@ -103,7 +104,8 @@ Sistema de Gestión de Carpintería
 
 <input type="password" name="password" class="form-control mb-3" placeholder="Contraseña" required>
 
-<div class="g-recaptcha mb-3" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+<!-- 🔥 TU SITE KEY REAL -->
+<div class="g-recaptcha mb-3" data-sitekey="6LcIwKMsAAAAAF6EHDHBwbP-OqMvoMDA-6fAyyqO"></div>
 
 <button class="btn btn-primary w-100">Ingresar</button>
 
