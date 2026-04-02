@@ -11,16 +11,24 @@ $error = "";
 
 if($_SERVER["REQUEST_METHOD"]=="POST"){
 
-    $usuario = $_POST["usuario"];
+    $usuario = trim($_POST["usuario"]);
     $password = password_hash($_POST["password"], PASSWORD_DEFAULT);
     $id_rol = $_POST["id_rol"];
 
-    mysqli_query($conexion,
-    "INSERT INTO usuarios(usuario,password,id_rol)
-    VALUES('$usuario','$password','$id_rol')");
+    /* 🔥 VALIDAR USUARIO DUPLICADO */
+    $check = mysqli_query($conexion, "SELECT id_usuario FROM usuarios WHERE usuario = '$usuario'");
 
-    header("Location: listar.php");
-    exit();
+    if(mysqli_num_rows($check) > 0){
+        $error = "⚠️ El nombre de usuario ya existe";
+    } else {
+
+        mysqli_query($conexion,
+        "INSERT INTO usuarios(usuario,password,id_rol)
+        VALUES('$usuario','$password','$id_rol')");
+
+        header("Location: listar.php");
+        exit();
+    }
 }
 ?>
 
@@ -56,6 +64,11 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
 </select>
 
 <button class="btn btn-success">Crear</button>
+
+<a href="/sistema_muebles/admin/dashboard.php"
+   class="btn btn-secondary mt-2">
+⬅ Volver al panel
+</a>
 
 </form>
 

@@ -31,21 +31,24 @@ $resultado = mysqli_query($conexion, $sql);
 
 <h1 class="mb-4">Listado de Clientes</h1>
 
-<!-- MENSAJE SI NO SE PUEDE ELIMINAR -->
+<!-- MENSAJE -->
 <?php if(isset($_GET['error']) && $_GET['error']=="con_pedidos"){ ?>
 <div class="alert alert-danger">
 ⚠ No se puede eliminar el cliente porque tiene pedidos asociados.
 </div>
 <?php } ?>
 
-<!-- BOTÓN SOLO RECEPCIÓN -->
+<!-- BOTÓN -->
 <?php if($_SESSION["id_rol"] == 2){ ?>
 <a href="nuevo.php" class="btn btn-primary mb-3">
 ➕ Nuevo Cliente
 </a>
 <?php } ?>
 
-<table class="table table-striped table-bordered">
+<!-- 🔎 BUSCADOR -->
+<input type="text" id="buscador" class="form-control mb-3" placeholder="🔎 Buscar cliente...">
+
+<table class="table table-striped table-bordered" id="tablaClientes">
 
 <thead class="table-dark">
 <tr>
@@ -64,25 +67,31 @@ $resultado = mysqli_query($conexion, $sql);
 </thead>
 
 <tbody>
+
 <?php while ($fila = mysqli_fetch_assoc($resultado)) { ?>
 <tr>
 
-<td><?php echo $fila["id_cliente"]; ?></td>
-<td><?php echo $fila["nombre"]; ?></td>
-<td><?php echo $fila["apellido"]; ?></td>
-<td><?php echo $fila["telefono"]; ?></td>
-<td><?php echo $fila["email"]; ?></td>
-<td><?php echo $fila["fecha_registro"]; ?></td>
+<td><?= $fila["id_cliente"]; ?></td>
+
+<td class="nombre"><?= $fila["nombre"]; ?></td>
+
+<td class="apellido"><?= $fila["apellido"]; ?></td>
+
+<td><?= $fila["telefono"]; ?></td>
+
+<td><?= $fila["email"]; ?></td>
+
+<td><?= $fila["fecha_registro"]; ?></td>
 
 <?php if($_SESSION["id_rol"] == 2){ ?>
 <td>
 
-<a href="editar.php?id=<?php echo $fila['id_cliente']; ?>"
+<a href="editar.php?id=<?= $fila['id_cliente']; ?>"
    class="btn btn-warning btn-sm">
 Editar
 </a>
 
-<a href="eliminar.php?id=<?php echo $fila['id_cliente']; ?>"
+<a href="eliminar.php?id=<?= $fila['id_cliente']; ?>"
    class="btn btn-danger btn-sm"
    onclick="return confirm('¿Seguro que querés eliminar este cliente?');">
 Eliminar
@@ -93,11 +102,11 @@ Eliminar
 
 </tr>
 <?php } ?>
-</tbody>
 
+</tbody>
 </table>
 
-<!-- VOLVER SEGÚN ROL -->
+<!-- VOLVER -->
 <?php if($_SESSION["id_rol"] == 1){ ?>
 <a href="/sistema_muebles/admin/dashboard.php"
    class="btn btn-secondary mt-3">
@@ -112,7 +121,24 @@ Eliminar
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- 🔥 SCRIPT BUSCADOR -->
+<script>
+document.getElementById("buscador").addEventListener("keyup", function() {
+    let filtro = this.value.toLowerCase();
+    let filas = document.querySelectorAll("#tablaClientes tbody tr");
+
+    filas.forEach(function(fila) {
+        let nombre = fila.querySelector(".nombre").textContent.toLowerCase();
+        let apellido = fila.querySelector(".apellido").textContent.toLowerCase();
+
+        if(nombre.includes(filtro) || apellido.includes(filtro)){
+            fila.style.display = "";
+        } else {
+            fila.style.display = "none";
+        }
+    });
+});
+</script>
 
 </body>
 </html>

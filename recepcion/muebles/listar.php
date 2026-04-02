@@ -1,8 +1,4 @@
-<?php if(isset($_GET['error']) && $_GET['error']=="con_pedidos"){ ?>
-<div class="alert alert-danger">
-⚠ No se puede eliminar el mueble porque está asociado a pedidos existentes.
-</div>
-<?php } ?><?php
+<?php
 session_start();
 require_once(__DIR__ . "/../../config/conexion.php");
 
@@ -44,10 +40,6 @@ $resultado = mysqli_query($conexion, $sql);
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>🪑 Catálogo de Muebles</h2>
-
-    <a href="nuevo.php" class="btn btn-primary">
-        ➕ Nuevo Mueble
-    </a>
 </div>
 
 <input type="text" id="buscador" class="form-control mb-3" placeholder="🔎 Buscar mueble...">
@@ -61,7 +53,6 @@ $resultado = mysqli_query($conexion, $sql);
 <th>Descripción</th>
 <th>Precio</th>
 <th>Características</th>
-<th class="text-center">Acciones</th>
 </tr>
 </thead>
 
@@ -70,32 +61,19 @@ $resultado = mysqli_query($conexion, $sql);
 <?php while($row = mysqli_fetch_assoc($resultado)) { ?>
 
 <tr>
-<td><?php echo $row['id_mueble']; ?></td>
+<td><?= $row['id_mueble']; ?></td>
 
 <td class="fw-semibold">
-<?php echo $row['nombre']; ?>
+<?= htmlspecialchars($row['nombre']); ?>
 </td>
 
-<td><?php echo $row['descripcion']; ?></td>
+<td><?= htmlspecialchars($row['descripcion']); ?></td>
 
 <td class="text-success fw-bold">
-$<?php echo number_format($row['precio_base'],2); ?>
+$<?= number_format($row['precio_base'],2); ?>
 </td>
 
-<td><?php echo $row['caracteristicas']; ?></td>
-
-<td class="text-center">
-<a href="editar.php?id=<?php echo $row['id_mueble']; ?>" 
-   class="btn btn-warning btn-sm me-1">
-   ✏️
-</a>
-
-<a href="eliminar.php?id=<?php echo $row['id_mueble']; ?>" 
-   class="btn btn-danger btn-sm"
-   onclick="return confirm('¿Eliminar este mueble?')">
-   🗑
-</a>
-</td>
+<td><?= htmlspecialchars($row['caracteristicas']); ?></td>
 
 </tr>
 
@@ -110,3 +88,18 @@ $<?php echo number_format($row['precio_base'],2); ?>
 </a>
 
 </div>
+
+<script>
+document.getElementById("buscador").addEventListener("keyup", function() {
+    let filtro = this.value.toLowerCase();
+    let filas = document.querySelectorAll("#tablaMuebles tr");
+
+    filas.forEach(function(fila) {
+        let texto = fila.textContent.toLowerCase();
+        fila.style.display = texto.includes(filtro) ? "" : "none";
+    });
+});
+</script>
+
+</body>
+</html>

@@ -7,23 +7,30 @@ if (!isset($_SESSION["id_usuario"]) || $_SESSION["id_rol"] != 2) {
     exit();
 }
 
-$id_pedido = $_GET["id"];
+/* 🔥 AHORA USAMOS id_detalle */
+$id_detalle = $_GET["id"];
 
-/* Obtener estado actual */
-$res = mysqli_query($conexion, "SELECT id_estado FROM pedidos WHERE id_pedido = $id_pedido");
-$pedido = mysqli_fetch_assoc($res);
+/* Obtener estado actual del DETALLE */
+$res = mysqli_query($conexion, "
+    SELECT id_estado 
+    FROM detalle_pedido 
+    WHERE id_detalle = $id_detalle
+");
 
-$estado_actual = $pedido['id_estado'];
+$detalle = mysqli_fetch_assoc($res);
+
+$estado_actual = $detalle['id_estado'];
 
 /* 🚫 NO avanzar si ya está en Retirado (4) */
 if ($estado_actual < 4) {
 
     $nuevo_estado = $estado_actual + 1;
 
-    mysqli_query($conexion,
-        "UPDATE pedidos 
-         SET id_estado = $nuevo_estado 
-         WHERE id_pedido = $id_pedido");
+    mysqli_query($conexion, "
+        UPDATE detalle_pedido 
+        SET id_estado = $nuevo_estado 
+        WHERE id_detalle = $id_detalle
+    ");
 }
 
 header("Location: listar.php");

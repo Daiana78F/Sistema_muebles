@@ -2,7 +2,7 @@
 session_start();
 require_once(__DIR__ . "/../../config/conexion.php");
 
-if ($_SESSION["id_rol"] != 1) {
+if (!isset($_SESSION["id_usuario"]) || $_SESSION["id_rol"] != 1) {
     header("Location: ../../public/login.php");
     exit();
 }

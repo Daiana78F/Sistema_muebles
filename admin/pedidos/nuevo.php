@@ -14,7 +14,7 @@ $clientes = mysqli_query($conexion,
  ORDER BY apellido ASC, nombre ASC");
 
 $muebles = mysqli_query($conexion,
-"SELECT id_mueble, nombre, descripcion FROM muebles");
+"SELECT id_mueble, nombre FROM muebles");
 
 /* ===== GUARDAR PEDIDO ===== */
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -146,7 +146,7 @@ let muebles = [
 <?php 
 mysqli_data_seek($muebles, 0);
 while($m = mysqli_fetch_assoc($muebles)) {
-    echo "{id: ".$m['id_mueble'].", nombre: '".addslashes($m['nombre'])."', descripcion: '".addslashes($m['descripcion'])."'},";
+    echo "{id: ".$m['id_mueble'].", nombre: '".$m['nombre']."'},";
 }
 ?>
 ];
@@ -166,7 +166,7 @@ document.getElementById("buscador").addEventListener("keyup", function() {
 
             let item = document.createElement("button");
             item.className = "list-group-item list-group-item-action";
-            item.innerText = m.nombre + " - " + m.descripcion;
+            item.innerText = m.nombre;
 
             item.onclick = () => agregarMueble(m);
 
@@ -194,7 +194,7 @@ function renderSeleccionados() {
 
         contenedor.innerHTML += `
         <div class="row mb-2">
-            <div class="col-5">${m.nombre} - ${m.descripcion}</div>
+            <div class="col-5">${m.nombre}</div>
             <div class="col-4">
                 <input type="number" name="cantidad[]" value="${m.cantidad}" min="1" class="form-control">
             </div>
@@ -214,33 +214,46 @@ function eliminar(index) {
 }
 
 // =========================
-// CLIENTES
+// CLIENTES (FIX PRO)
 // =========================
 
 let select = document.getElementById("selectCliente");
 let buscador = document.getElementById("buscadorCliente");
 
+// Filtrar
 buscador.addEventListener("input", function() {
 
     let texto = this.value.toLowerCase().trim();
+
     select.style.display = "block";
 
     let opciones = select.querySelectorAll("option");
 
     opciones.forEach(op => {
+
         let nombre = op.textContent.toLowerCase();
-        op.style.display = nombre.includes(texto) ? "block" : "none";
+
+        if(nombre.includes(texto)){
+            op.style.display = "block";
+        } else {
+            op.style.display = "none";
+        }
+
     });
 
 });
 
+// Seleccionar
 select.addEventListener("change", function() {
 
     let seleccionado = this.options[this.selectedIndex].text;
+
     buscador.value = seleccionado;
+
     select.style.display = "none";
 });
 
+// Si borra → volver a mostrar
 buscador.addEventListener("keyup", function() {
 
     if(this.value === ""){

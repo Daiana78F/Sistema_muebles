@@ -14,24 +14,22 @@ if (!isset($_GET["id"])) {
     exit();
 }
 
-/* 🔥 AHORA USAMOS id_detalle */
-$id_detalle = (int) $_GET["id"];
+$id = (int) $_GET["id"];
 
-/* obtener estado del DETALLE */
+/* evitar cancelar pedidos ya finalizados */
 $check = mysqli_query($conexion,
-"SELECT id_estado FROM detalle_pedido WHERE id_detalle = $id_detalle");
+"SELECT id_estado FROM pedidos WHERE id_pedido = $id");
 
-$detalle = mysqli_fetch_assoc($check);
+$pedido = mysqli_fetch_assoc($check);
 
-/* 🚫 no cancelar si ya está retirado o cancelado */
-if ($detalle["id_estado"] == 4 || $detalle["id_estado"] == 5) {
+if ($pedido["id_estado"] == 4 || $pedido["id_estado"] == 5) {
     header("Location: listar.php");
     exit();
 }
 
 /* cambiar estado a CANCELADO (5) */
 mysqli_query($conexion,
-"UPDATE detalle_pedido SET id_estado = 5 WHERE id_detalle = $id_detalle");
+"UPDATE pedidos SET id_estado = 5 WHERE id_pedido = $id");
 
 header("Location: listar.php");
 exit();

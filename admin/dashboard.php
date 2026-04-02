@@ -44,7 +44,7 @@ $total_pedidos = mysqli_fetch_assoc(
 <div class="card bg-dark text-white mb-3">
 <div class="card-body">
 <h5>Usuarios</h5>
-<h2><?php echo $total_usuarios; ?></h2>
+<h2><?= $total_usuarios ?></h2>
 </div>
 </div>
 </div>
@@ -53,7 +53,7 @@ $total_pedidos = mysqli_fetch_assoc(
 <div class="card bg-primary text-white mb-3">
 <div class="card-body">
 <h5>Clientes</h5>
-<h2><?php echo $total_clientes; ?></h2>
+<h2><?= $total_clientes ?></h2>
 </div>
 </div>
 </div>
@@ -62,7 +62,7 @@ $total_pedidos = mysqli_fetch_assoc(
 <div class="card bg-success text-white mb-3">
 <div class="card-body">
 <h5>Pedidos</h5>
-<h2><?php echo $total_pedidos; ?></h2>
+<h2><?= $total_pedidos ?></h2>
 </div>
 </div>
 </div>
@@ -80,17 +80,19 @@ $total_pedidos = mysqli_fetch_assoc(
 👥 Gestionar Usuarios
 </a>
 
+<!-- CLIENTES se mantiene en RECEPCION -->
 <a href="/sistema_muebles/recepcion/clientes/listar.php"
    class="btn btn-primary">
 📋 Ver Clientes
 </a>
 
-<a href="/sistema_muebles/recepcion/pedidos/listar.php"
+<!-- PEDIDOS ahora correcto -->
+<a href="/sistema_muebles/admin/pedidos/listar.php"
    class="btn btn-success">
 📦 Ver Pedidos
 </a>
 
-<a href="/sistema_muebles/recepcion/muebles/listar.php"
+<a href="/sistema_muebles/admin/muebles/listar.php"
    class="btn btn-warning">
 🪑 Ver Catálogo
 </a>

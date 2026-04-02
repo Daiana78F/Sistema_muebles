@@ -7,16 +7,28 @@ if (!isset($_SESSION["id_usuario"]) || $_SESSION["id_rol"] != 2) {
     exit();
 }
 
+/* VALIDAR ID */
+if (!isset($_GET["id"]) || !is_numeric($_GET["id"])) {
+    header("Location: listar.php");
+    exit();
+}
+
 $id = $_GET["id"];
 $mensaje = "";
 
-/* Obtener cliente */
-$resultado = mysqli_query($conexion,
-    "SELECT * FROM clientes WHERE id_cliente = $id");
+/* OBTENER CLIENTE */
+$stmt = $conexion->prepare("SELECT * FROM clientes WHERE id_cliente = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$resultado = $stmt->get_result();
+$cliente = $resultado->fetch_assoc();
 
-$cliente = mysqli_fetch_assoc($resultado);
+if (!$cliente) {
+    header("Location: listar.php");
+    exit();
+}
 
-/* Actualizar datos */
+/* ACTUALIZAR */
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $nombre = trim($_POST["nombre"]);
@@ -24,18 +36,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $telefono = trim($_POST["telefono"]);
     $email = trim($_POST["email"]);
 
-    $sql = "UPDATE clientes SET
-            nombre='$nombre',
-            apellido='$apellido',
-            telefono='$telefono',
-            email='$email'
-            WHERE id_cliente=$id";
-
-    if(mysqli_query($conexion,$sql)){
-        header("Location: listar.php");
-        exit();
+    if (empty($nombre) || empty($apellido) || empty($telefono)) {
+        $mensaje = "Todos los campos obligatorios deben completarse";
     } else {
-        $mensaje = "Error al actualizar cliente";
+
+        /* 🔒 VALIDAR EMAIL DUPLICADO */
+        $stmt = $conexion->prepare("SELECT id_cliente FROM clientes WHERE email = ? AND id_cliente != ?");
+        $stmt->bind_param("si", $email, $id);
+        $stmt->execute();
+        $resEmail = $stmt->get_result();
+
+        if ($resEmail->num_rows > 0) {
+            $mensaje = "⚠️ Ese email ya está registrado en otro cliente";
+        } else {
+
+            /* 🔒 VALIDAR TELÉFONO DUPLICADO */
+            $stmt = $conexion->prepare("SELECT id_cliente FROM clientes WHERE telefono = ? AND id_cliente != ?");
+            $stmt->bind_param("si", $telefono, $id);
+            $stmt->execute();
+            $resTel = $stmt->get_result();
+
+            if ($resTel->num_rows > 0) {
+                $mensaje = "⚠️ Ese teléfono ya está registrado en otro cliente";
+            } else {
+
+                /* UPDATE SEGURO */
+                $stmt = $conexion->prepare("UPDATE clientes 
+                    SET nombre=?, apellido=?, telefono=?, email=? 
+                    WHERE id_cliente=?");
+
+                $stmt->bind_param("ssssi", $nombre, $apellido, $telefono, $email, $id);
+
+                if ($stmt->execute()) {
+                    header("Location: listar.php");
+                    exit();
+                } else {
+                    $mensaje = "Error al actualizar cliente";
+                }
+            }
+        }
     }
 }
 ?>
@@ -55,10 +94,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="container mt-4">
 
-<h2 class="mb-4">✏ Editar Cliente</h2>
+<h2 class="mb-4">✏️ Editar Cliente</h2>
 
 <div class="card shadow-sm">
 <div class="card-body">
+
+<?php if(!empty($mensaje)): ?>
+<div class="alert alert-danger">
+    <?= $mensaje ?>
+</div>
+<?php endif; ?>
 
 <form method="POST">
 
@@ -66,28 +111,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <label class="form-label">Nombre</label>
 <input type="text" name="nombre"
        class="form-control"
-       value="<?php echo $cliente['nombre']; ?>" required>
+       value="<?= htmlspecialchars($cliente['nombre']) ?>" required>
 </div>
 
 <div class="mb-3">
 <label class="form-label">Apellido</label>
 <input type="text" name="apellido"
        class="form-control"
-       value="<?php echo $cliente['apellido']; ?>" required>
+       value="<?= htmlspecialchars($cliente['apellido']) ?>" required>
 </div>
 
 <div class="mb-3">
 <label class="form-label">Teléfono</label>
 <input type="text" name="telefono"
        class="form-control"
-       value="<?php echo $cliente['telefono']; ?>" required>
+       value="<?= htmlspecialchars($cliente['telefono']) ?>" required>
 </div>
 
 <div class="mb-3">
 <label class="form-label">Email</label>
 <input type="email" name="email"
        class="form-control"
-       value="<?php echo $cliente['email']; ?>">
+       value="<?= htmlspecialchars($cliente['email']) ?>">
 </div>
 
 <button type="submit" class="btn btn-success">
@@ -99,12 +144,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </a>
 
 </form>
-
-<?php if(!empty($mensaje)){ ?>
-<div class="alert alert-danger mt-3">
-<?php echo $mensaje; ?>
-</div>
-<?php } ?>
 
 </div>
 </div>

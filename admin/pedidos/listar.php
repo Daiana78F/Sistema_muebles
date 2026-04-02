@@ -1,41 +1,30 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["id_usuario"])) {
+if (!isset($_SESSION["id_usuario"]) || $_SESSION["id_rol"] != 1) {
     header("Location: ../../public/login.php");
     exit();
 }
 
 $conexion = mysqli_connect("localhost", "root", "", "sistema_muebles");
 
-/* 🔥 QUERY CORREGIDA FINAL */
 $sql = "SELECT 
 p.id_pedido,
-dp.id_detalle,
-
-IFNULL(dp.id_estado, p.id_estado) AS id_estado,
-
+p.id_estado,
 c.nombre,
 c.apellido,
-
 m.nombre AS mueble,
 dp.cantidad,
-
 p.fecha_pedido,
 p.fecha_estimada,
 p.sena,
-
 e.nombre_estado AS estado
 
 FROM pedidos p
 
 JOIN clientes c ON p.id_cliente = c.id_cliente
-
+JOIN estados_pedido e ON p.id_estado = e.id_estado
 LEFT JOIN detalle_pedido dp ON p.id_pedido = dp.id_pedido
-
-LEFT JOIN estados_pedido e 
-ON e.id_estado = IFNULL(dp.id_estado, p.id_estado)
-
 LEFT JOIN muebles m ON dp.id_mueble = m.id_mueble
 
 ORDER BY p.id_pedido DESC";
@@ -69,15 +58,7 @@ $resultado = mysqli_query($conexion, $sql);
 
 <h2 class="mb-3">📦 Listado de Pedidos</h2>
 
-<div class="d-flex justify-content-between mb-3">
-<input type="text" id="buscador" class="form-control w-50" placeholder="🔎 Buscar cliente o mueble...">
-
-<?php if($_SESSION["id_rol"] == 2): ?>
-<a href="nuevo.php" class="btn btn-primary">
-➕ Nuevo Pedido
-</a>
-<?php endif; ?>
-</div>
+<input type="text" id="buscador" class="form-control w-50 mb-3" placeholder="🔎 Buscar cliente...">
 
 <table class="table table-hover table-bordered" id="tablaPedidos">
 
@@ -91,7 +72,6 @@ $resultado = mysqli_query($conexion, $sql);
 <th>Fecha</th>
 <th>Entrega</th>
 <th>Estado</th>
-<th>Acciones</th>
 </tr>
 </thead>
 
@@ -109,11 +89,9 @@ $resultado = mysqli_query($conexion, $sql);
 <?= $row['apellido']." ".$row['nombre'] ?>
 </td>
 
-<td class="mueble">
-<?= $row['mueble'] ?? "Sin muebles" ?>
-</td>
+<td><?= $row['mueble'] ?? "Sin muebles"; ?></td>
 
-<td><?= $row['cantidad'] ?? "-" ?></td>
+<td><?= $row['cantidad'] ?? "-"; ?></td>
 
 <td>$<?= $row['sena'] ?></td>
 <td><?= $row['fecha_pedido'] ?></td>
@@ -130,33 +108,10 @@ if($estado=="Listo para retirar") $clase="badge-listo";
 if($estado=="Retirado") $clase="badge-retirado";
 if($estado=="Cancelado") $clase="badge-cancelado";
 ?>
+
 <span class="badge <?= $clase ?>">
 <?= $estado ?>
 </span>
-</td>
-
-<td>
-
-<?php if($_SESSION["id_rol"] == 2): ?>
-
-<?php if($row['id_estado'] < 4): ?>
-
-<?php if(!empty($row['id_detalle'])): ?>
-<a href="cambiar_estado.php?id=<?= $row['id_detalle'] ?>"
-   class="btn btn-success btn-sm">
-Avanzar
-</a>
-
-<a href="cancelar.php?id=<?= $row['id_detalle'] ?>"
-   class="btn btn-danger btn-sm">
-Cancelar
-</a>
-<?php endif; ?>
-
-<?php endif; ?>
-
-<?php endif; ?>
-
 </td>
 
 </tr>
@@ -165,14 +120,14 @@ Cancelar
 
 <?php else: ?>
 <tr>
-<td colspan="9" class="text-center">No hay pedidos</td>
+<td colspan="8" class="text-center">No hay pedidos</td>
 </tr>
 <?php endif; ?>
 
 </tbody>
 </table>
 
-<a href="../dashboard.php" class="btn btn-secondary mt-3">
+<a href="/sistema_muebles/admin/dashboard.php" class="btn btn-secondary mt-3">
 ⬅ Volver
 </a>
 
@@ -186,9 +141,7 @@ document.getElementById("buscador").addEventListener("keyup", function() {
 
     filas.forEach(function(fila) {
         let cliente = fila.querySelector(".cliente")?.textContent.toLowerCase() || "";
-        let mueble = fila.querySelector(".mueble")?.textContent.toLowerCase() || "";
-
-        fila.style.display = (cliente.includes(filtro) || mueble.includes(filtro)) ? "" : "none";
+        fila.style.display = cliente.includes(filtro) ? "" : "none";
     });
 });
 </script>

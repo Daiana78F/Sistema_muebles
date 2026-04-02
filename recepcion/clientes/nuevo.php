@@ -17,7 +17,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);
     $fecha_registro = date("Y-m-d");
 
-    /* 🔍 VALIDAR EMAIL */
+    /* 🔥 SI EMAIL VACÍO → NULL */
+    $email_sql = ($email == "") ? "NULL" : "'$email'";
+
+    /* 🔍 VALIDAR EMAIL SOLO SI EXISTE */
     if (!empty($email)) {
         $check_email = mysqli_query($conexion,
             "SELECT * FROM clientes WHERE email = '$email'");
@@ -41,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($mensaje)) {
 
         $sql = "INSERT INTO clientes (nombre, apellido, telefono, email, fecha_registro)
-                VALUES ('$nombre', '$apellido', '$telefono', '$email', '$fecha_registro')";
+                VALUES ('$nombre', '$apellido', '$telefono', $email_sql, '$fecha_registro')";
 
         if (mysqli_query($conexion, $sql)) {
             header("Location: listar.php");
