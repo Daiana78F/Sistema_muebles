@@ -8,23 +8,33 @@ if (!isset($_SESSION["id_usuario"]) || $_SESSION["id_rol"] != 1) {
 
 $conexion = mysqli_connect("localhost", "root", "", "sistema_muebles");
 
+/* 🔥 USAR ESTADO DEL DETALLE SI EXISTE */
 $sql = "SELECT 
 p.id_pedido,
-p.id_estado,
+
+IFNULL(dp.id_estado, p.id_estado) AS id_estado,
+
 c.nombre,
 c.apellido,
+
 m.nombre AS mueble,
 dp.cantidad,
+
 p.fecha_pedido,
 p.fecha_estimada,
 p.sena,
+
 e.nombre_estado AS estado
 
 FROM pedidos p
 
 JOIN clientes c ON p.id_cliente = c.id_cliente
-JOIN estados_pedido e ON p.id_estado = e.id_estado
+
 LEFT JOIN detalle_pedido dp ON p.id_pedido = dp.id_pedido
+
+LEFT JOIN estados_pedido e 
+ON e.id_estado = IFNULL(dp.id_estado, p.id_estado)
+
 LEFT JOIN muebles m ON dp.id_mueble = m.id_mueble
 
 ORDER BY p.id_pedido DESC";
@@ -133,7 +143,6 @@ if($estado=="Cancelado") $clase="badge-cancelado";
 
 </div>
 
-<!-- 🔎 BUSCADOR -->
 <script>
 document.getElementById("buscador").addEventListener("keyup", function() {
     let filtro = this.value.toLowerCase();

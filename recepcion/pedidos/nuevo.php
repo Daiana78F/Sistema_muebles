@@ -7,6 +7,8 @@ if (!isset($_SESSION["id_usuario"])) {
     exit();
 }
 
+$mensaje = "";
+
 /* Obtener datos */
 $clientes = mysqli_query($conexion,
 "SELECT id_cliente, nombre, apellido 
@@ -28,35 +30,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fecha_pedido = date("Y-m-d");
     $id_estado = 1;
 
-    $sql = "INSERT INTO pedidos
-    (id_cliente, fecha_pedido, fecha_estimada, sena, id_estado)
-    VALUES
-    ('$id_cliente','$fecha_pedido','$fecha_estimada','$sena','$id_estado')";
-
-    if (!mysqli_query($conexion, $sql)) {
-        die("ERROR PEDIDO: " . mysqli_error($conexion));
+    /* 🚫 VALIDAR FECHA PASADA */
+    if ($fecha_estimada < $fecha_pedido) {
+        $mensaje = "❌ No podés seleccionar una fecha anterior a hoy.";
     }
 
-    $id_pedido = mysqli_insert_id($conexion);
+    /* SI TODO OK */
+    if (empty($mensaje)) {
 
-    for ($i = 0; $i < count($muebles_seleccionados); $i++) {
+        $sql = "INSERT INTO pedidos
+        (id_cliente, fecha_pedido, fecha_estimada, sena, id_estado)
+        VALUES
+        ('$id_cliente','$fecha_pedido','$fecha_estimada','$sena','$id_estado')";
 
-        $id_mueble = $muebles_seleccionados[$i];
-        $cantidad = $cantidades[$i];
-
-        if ($cantidad > 0) {
-
-            $sql_detalle = "INSERT INTO detalle_pedido
-            (id_pedido, id_mueble, cantidad)
-            VALUES
-            ('$id_pedido','$id_mueble','$cantidad')";
-
-            mysqli_query($conexion, $sql_detalle);
+        if (!mysqli_query($conexion, $sql)) {
+            die("ERROR PEDIDO: " . mysqli_error($conexion));
         }
-    }
 
-    header("Location: listar.php");
-    exit();
+        $id_pedido = mysqli_insert_id($conexion);
+
+        for ($i = 0; $i < count($muebles_seleccionados); $i++) {
+
+            $id_mueble = $muebles_seleccionados[$i];
+            $cantidad = $cantidades[$i];
+
+            if ($cantidad > 0) {
+
+                $sql_detalle = "INSERT INTO detalle_pedido
+                (id_pedido, id_mueble, cantidad)
+                VALUES
+                ('$id_pedido','$id_mueble','$cantidad')";
+
+                mysqli_query($conexion, $sql_detalle);
+            }
+        }
+
+        header("Location: listar.php");
+        exit();
+    }
 }
 ?>
 
@@ -79,6 +90,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="card-body">
 
 <h3 class="mb-4">➕ Registrar Nuevo Pedido</h3>
+
+<!-- 🔥 MOSTRAR ERROR -->
+<?php if(!empty($mensaje)): ?>
+<div class="alert alert-danger">
+    <?= $mensaje ?>
+</div>
+<?php endif; ?>
 
 <form method="POST">
 
